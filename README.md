@@ -23,7 +23,7 @@ leaf-kit-tour --lang ko
 
 - **자동 업데이트** — 실행 시 최신 버전이 있으면 자동으로 업데이트 후 실행
 - **설치 현황 조회** — `brew list` 기반으로 각 도구의 실제 설치 여부를 표시
-- **전체 설치 / 선택 설치 / 재설치** — 대화형 메뉴에서 선택
+- **전체 설치 / 선택 설치 / 재설치 / 업그레이드 / 삭제** — 대화형 메뉴에서 선택
 - **다국어 지원** — `--lang ko`로 한국어 인터페이스
 
 ## 터미널 실행 화면
@@ -84,6 +84,8 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
   a  전체 설치 (모든 CLI 도구)
   번호  번호로 선택 설치 (예: 1,3,5 또는 1-3)
   r  재설치 모드
+  u  전체 업그레이드 (설치된 도구 최신화)
+  d  삭제 모드 (번호 지정 또는 전체 삭제)
   s  설치 현황 새로고침
   q  종료
 
@@ -143,6 +145,65 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
 >> playgraph 재설치 중...
   -> brew reinstall leaf-kit/playgraph/playgraph
   [OK] playgraph 재설치 완료!
+```
+
+### 전체 업그레이드
+
+```
+선택> u
+
+>> 설치된 도구를 전체 업그레이드합니다.
+
+>> stylemd 업그레이드 확인 중...
+  -> brew upgrade leaf-kit/stylemd/stylemd
+  [OK] stylemd 업그레이드 완료!
+
+>> playgraph 업그레이드 확인 중...
+  [—] playgraph 미설치 상태 — 건너뜁니다.
+
+>> lsmd 업그레이드 확인 중...
+  -> brew upgrade leaf-kit/lsmd/lsmd
+  [OK] lsmd 이미 최신 버전입니다.
+
+...
+
+전체 업그레이드 완료!
+```
+
+### 삭제 모드
+
+```
+선택> d
+
+삭제할 도구 번호를 입력하세요 (예: 1,3,5 또는 a=전체):
+삭제> 1,3
+
+>> stylemd 삭제 중...
+  -> brew uninstall leaf-kit/stylemd/stylemd
+  [OK] stylemd 삭제 완료!
+
+>> lsmd 삭제 중...
+  -> brew uninstall leaf-kit/lsmd/lsmd
+  [OK] lsmd 삭제 완료!
+```
+
+### 전체 삭제
+
+```
+선택> d
+
+삭제할 도구 번호를 입력하세요 (예: 1,3,5 또는 a=전체):
+삭제> a
+
+>> stylemd 삭제 중...
+  -> brew uninstall leaf-kit/stylemd/stylemd
+  [OK] stylemd 삭제 완료!
+
+>> playgraph 삭제 중...
+  -> brew uninstall leaf-kit/playgraph/playgraph
+  [OK] playgraph 삭제 완료!
+
+...
 ```
 
 ## 설치 가능한 CLI 도구 요약

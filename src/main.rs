@@ -307,6 +307,8 @@ fn print_menu(lang: &str) {
             "번호".cyan().bold()
         );
         println!("  {}  재설치 모드", "r".cyan().bold());
+        println!("  {}  전체 업그레이드 (설치된 도구 최신화)", "u".cyan().bold());
+        println!("  {}  삭제 모드 (번호 지정 또는 전체 삭제)", "d".cyan().bold());
         println!("  {}  설치 현황 새로고침", "s".cyan().bold());
         println!("  {}  종료", "q".cyan().bold());
     } else {
@@ -317,6 +319,8 @@ fn print_menu(lang: &str) {
             "N".cyan().bold()
         );
         println!("  {}  Reinstall mode", "r".cyan().bold());
+        println!("  {}  Upgrade all installed tools", "u".cyan().bold());
+        println!("  {}  Uninstall mode (by number or all)", "d".cyan().bold());
         println!("  {}  Refresh install status", "s".cyan().bold());
         println!("  {}  Quit", "q".cyan().bold());
     }
@@ -421,6 +425,144 @@ fn install_tool(tool: &Tool, lang: &str) {
                     tool.name,
                     formula
                 );
+            }
+        }
+    }
+}
+
+fn upgrade_tool(tool: &Tool, lang: &str) {
+    let formula = format!("{}/{}", tool.tap, tool.formula);
+    if lang == "ko" {
+        println!(
+            "\n{} {} 업그레이드 확인 중...",
+            ">>".cyan().bold(),
+            tool.name.cyan().bold()
+        );
+    } else {
+        println!(
+            "\n{} Checking upgrade for {}...",
+            ">>".cyan().bold(),
+            tool.name.cyan().bold()
+        );
+    }
+
+    // Check if installed first
+    let list_result = Command::new("brew")
+        .args(["list", "--formula"])
+        .output();
+    let is_installed = match &list_result {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            stdout.lines().any(|line| line.trim() == tool.formula)
+        }
+        Err(_) => false,
+    };
+
+    if !is_installed {
+        if lang == "ko" {
+            println!(
+                "  {} {} 미설치 상태 — 건너뜁니다.",
+                "[—]".bright_black(),
+                tool.name
+            );
+        } else {
+            println!(
+                "  {} {} not installed — skipping.",
+                "[—]".bright_black(),
+                tool.name
+            );
+        }
+        return;
+    }
+
+    println!("  -> brew upgrade {}", formula);
+    let result = Command::new("brew").args(["upgrade", &formula]).output();
+
+    match result {
+        Ok(output) if output.status.success() => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let combined = format!("{}{}", stdout, stderr);
+            if combined.contains("already installed") || combined.contains("already the newest") {
+                if lang == "ko" {
+                    println!(
+                        "  {} {} 이미 최신 버전입니다.",
+                        "[OK]".green().bold(),
+                        tool.name.green().bold()
+                    );
+                } else {
+                    println!(
+                        "  {} {} already up to date.",
+                        "[OK]".green().bold(),
+                        tool.name.green().bold()
+                    );
+                }
+            } else {
+                if lang == "ko" {
+                    println!(
+                        "  {} {} 업그레이드 완료!",
+                        "[OK]".green().bold(),
+                        tool.name.green().bold()
+                    );
+                } else {
+                    println!(
+                        "  {} {} upgraded!",
+                        "[OK]".green().bold(),
+                        tool.name.green().bold()
+                    );
+                }
+            }
+        }
+        _ => {
+            if lang == "ko" {
+                println!("  {} {} 업그레이드 실패.", "[FAIL]".red().bold(), tool.name);
+            } else {
+                println!("  {} {} upgrade failed.", "[FAIL]".red().bold(), tool.name);
+            }
+        }
+    }
+}
+
+fn uninstall_tool(tool: &Tool, lang: &str) {
+    let formula = format!("{}/{}", tool.tap, tool.formula);
+    if lang == "ko" {
+        println!(
+            "\n{} {} 삭제 중...",
+            ">>".red().bold(),
+            tool.name.red().bold()
+        );
+    } else {
+        println!(
+            "\n{} Uninstalling {}...",
+            ">>".red().bold(),
+            tool.name.red().bold()
+        );
+    }
+    println!("  -> brew uninstall {}", formula);
+
+    let result = Command::new("brew").args(["uninstall", &formula]).status();
+
+    match result {
+        Ok(status) if status.success() => {
+            if lang == "ko" {
+                println!(
+                    "  {} {} 삭제 완료!",
+                    "[OK]".green().bold(),
+                    tool.name.green().bold()
+                );
+            } else {
+                println!(
+                    "  {} {} uninstalled!",
+                    "[OK]".green().bold(),
+                    tool.name.green().bold()
+                );
+            }
+        }
+        _ => {
+            if lang == "ko" {
+                println!("  {} {} 삭제 실패.", "[FAIL]".red().bold(), tool.name);
+            } else {
+                println!("  {} {} uninstall failed.", "[FAIL]".red().bold(), tool.name);
             }
         }
     }
@@ -641,6 +783,63 @@ fn main() {
                 }
                 println!();
             }
+            "d" | "D" | "delete" | "uninstall" => {
+                if lang == "ko" {
+                    println!(
+                        "\n삭제할 도구 번호를 입력하세요 (예: 1,3,5 또는 a=전체):"
+                    );
+                } else {
+                    println!(
+                        "\nEnter tool numbers to uninstall (e.g. 1,3,5 or a=all):"
+                    );
+                }
+                let sel_prompt = if lang == "ko" {
+                    format!("{} ", "삭제>".red().bold())
+                } else {
+                    format!("{} ", "uninstall>".red().bold())
+                };
+                let sel = prompt_input(&sel_prompt);
+                if sel == "a" || sel == "A" {
+                    for tool in TOOLS {
+                        uninstall_tool(tool, lang);
+                    }
+                } else {
+                    let indices = parse_selection(&sel);
+                    if indices.is_empty() {
+                        if lang == "ko" {
+                            println!("{}", "[!] 올바른 번호를 입력하세요.".red());
+                        } else {
+                            println!("{}", "[!] Enter a valid number.".red());
+                        }
+                    } else {
+                        for &idx in &indices {
+                            uninstall_tool(&TOOLS[idx], lang);
+                        }
+                    }
+                }
+                println!();
+            }
+            "u" | "U" | "upgrade" => {
+                if lang == "ko" {
+                    println!(
+                        "\n{} 설치된 도구를 전체 업그레이드합니다.",
+                        ">>".bold()
+                    );
+                } else {
+                    println!(
+                        "\n{} Upgrading all installed tools.",
+                        ">>".bold()
+                    );
+                }
+                for tool in TOOLS {
+                    upgrade_tool(tool, lang);
+                }
+                if lang == "ko" {
+                    println!("\n{}\n", "전체 업그레이드 완료!".green().bold());
+                } else {
+                    println!("\n{}\n", "All upgrades complete!".green().bold());
+                }
+            }
             "s" | "S" | "status" => {
                 if lang == "ko" {
                     println!("\n{} 설치 현황을 새로고침합니다...\n", "[*]".cyan().bold());
@@ -654,12 +853,12 @@ fn main() {
                 if indices.is_empty() {
                     if lang == "ko" {
                         println!(
-                            "\n{} 올바른 옵션을 선택하세요. (번호, a=전체설치, r=재설치, s=현황, q=종료)\n",
+                            "\n{} 올바른 옵션을 선택하세요. (번호, a=전체설치, r=재설치, u=업그레이드, d=삭제, s=현황, q=종료)\n",
                             "[!]".yellow()
                         );
                     } else {
                         println!(
-                            "\n{} Invalid option. (number, a=all, r=reinstall, s=status, q=quit)\n",
+                            "\n{} Invalid option. (number, a=all, r=reinstall, u=upgrade, d=uninstall, s=status, q=quit)\n",
                             "[!]".yellow()
                         );
                     }

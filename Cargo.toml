@@ -1,0 +1,9 @@
+[package]
+name = "repo-tour"
+version = "0.1.0"
+edition = "2021"
+description = "Browse and install leaf-kit CLI tools via Homebrew"
+license = "MIT"
+
+[dependencies]
+colored = "2"

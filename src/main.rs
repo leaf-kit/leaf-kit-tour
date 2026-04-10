@@ -737,27 +737,60 @@ fn print_usage() {
     println!("USAGE:");
     println!("  leaf-kit-tour [OPTIONS]\n");
     println!("OPTIONS:");
-    println!("  --lang ko       한국어 인터페이스로 실행");
-    println!("  --lang en       Run in English (default)");
-    println!("  --version       Show version");
-    println!("  --help          Show this help");
+    println!("  (no flag)       대화형 언어 선택 (기본값: 한국어)");
+    println!("  --lang ko       한국어 인터페이스로 바로 실행");
+    println!("  --lang en       Run in English directly");
+    println!("  --version       Show version / 버전 표시");
+    println!("  --help          Show this help / 도움말 표시");
+}
+
+fn select_language() -> &'static str {
+    println!();
+    println!(
+        "{}",
+        "══════════════════════════════════════════════════════════════"
+            .green()
+    );
+    println!(
+        "{}",
+        "          leaf-kit-tour  —  CLI Toolkit Installer            "
+            .green()
+            .bold()
+    );
+    println!(
+        "{}",
+        "══════════════════════════════════════════════════════════════"
+            .green()
+    );
+    println!();
+    println!("{}", "[언어 선택 / Select Language]".yellow().bold());
+    println!("  {}  한국어 (기본값)", "1".cyan().bold());
+    println!("  {}  English", "2".cyan().bold());
+    println!();
+
+    let input = prompt_input(&format!("{} ", "선택/select (1)>".cyan().bold()));
+
+    match input.as_str() {
+        "2" | "en" | "EN" | "english" => "en",
+        _ => "ko", // default: 한국어
+    }
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
     // Parse arguments
-    let mut lang = "en";
+    let mut lang: Option<&str> = None;
 
     let mut i = 1;
     while i < args.len() {
         match args[i].as_str() {
             "--lang" | "-lang" => {
                 if i + 1 < args.len() {
-                    lang = match args[i + 1].as_str() {
+                    lang = Some(match args[i + 1].as_str() {
                         "ko" | "kr" => "ko",
                         _ => "en",
-                    };
+                    });
                     i += 1;
                 }
             }
@@ -773,6 +806,9 @@ fn main() {
         }
         i += 1;
     }
+
+    // If --lang not specified, ask interactively
+    let lang = lang.unwrap_or_else(|| select_language());
 
     print_banner(lang);
 

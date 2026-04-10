@@ -201,12 +201,17 @@ fn check_self_update(lang: &str) {
     }
 }
 
-fn get_install_status() -> Vec<bool> {
+struct ToolStatus {
+    installed: bool,
+    version: Option<String>,
+}
+
+fn get_install_status() -> Vec<ToolStatus> {
     let result = Command::new("brew")
-        .args(["list", "--formula"])
+        .args(["list", "--formula", "--versions"])
         .output();
 
-    let installed: Vec<String> = match result {
+    let lines: Vec<String> = match result {
         Ok(output) => {
             let stdout = String::from_utf8_lossy(&output.stdout);
             stdout.lines().map(|l| l.trim().to_string()).collect()
@@ -216,7 +221,27 @@ fn get_install_status() -> Vec<bool> {
 
     TOOLS
         .iter()
-        .map(|tool| installed.iter().any(|name| name == tool.formula))
+        .map(|tool| {
+            // Each line is like "formula 1.2.3" or "formula 1.2.3 1.3.0"
+            let found = lines.iter().find(|line| {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                parts.first().map_or(false, |name| *name == tool.formula)
+            });
+            match found {
+                Some(line) => {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    let version = parts.last().map(|v| v.to_string());
+                    ToolStatus {
+                        installed: true,
+                        version,
+                    }
+                }
+                None => ToolStatus {
+                    installed: false,
+                    version: None,
+                },
+            }
+        })
         .collect()
 }
 
@@ -240,8 +265,11 @@ fn print_tool_list(lang: &str) {
     );
 
     for (i, tool) in TOOLS.iter().enumerate() {
-        let status_icon = if statuses[i] {
-            "[installed]".green().bold().to_string()
+        let status_icon = if statuses[i].installed {
+            match &statuses[i].version {
+                Some(v) => format!("[v{}]", v).green().bold().to_string(),
+                None => "[installed]".green().bold().to_string(),
+            }
         } else {
             "[  —  ]".bright_black().to_string()
         };
@@ -253,7 +281,7 @@ fn print_tool_list(lang: &str) {
         };
 
         println!(
-            "  {}  {}  {:<12}  {}",
+            "  {}  {:>12}  {:<12}  {}",
             format!("{}", i + 1).cyan().bold(),
             status_icon,
             tool.name.green().bold(),
@@ -430,44 +458,71 @@ fn install_tool(tool: &Tool, lang: &str) {
     }
 }
 
-fn upgrade_tool(tool: &Tool, lang: &str) {
-    let formula = format!("{}/{}", tool.tap, tool.formula);
-    if lang == "ko" {
-        println!(
-            "\n{} {} 업그레이드 확인 중...",
-            ">>".cyan().bold(),
-            tool.name.cyan().bold()
-        );
-    } else {
-        println!(
-            "\n{} Checking upgrade for {}...",
-            ">>".cyan().bold(),
-            tool.name.cyan().bold()
-        );
-    }
-
-    // Check if installed first
-    let list_result = Command::new("brew")
-        .args(["list", "--formula"])
+fn get_tool_version(tool: &Tool) -> Option<String> {
+    let result = Command::new("brew")
+        .args(["list", "--formula", "--versions"])
         .output();
-    let is_installed = match &list_result {
+    match result {
         Ok(output) => {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            stdout.lines().any(|line| line.trim() == tool.formula)
+            stdout.lines().find_map(|line| {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.first().map_or(false, |name| *name == tool.formula) {
+                    parts.last().map(|v| v.to_string())
+                } else {
+                    None
+                }
+            })
         }
-        Err(_) => false,
-    };
+        Err(_) => None,
+    }
+}
 
-    if !is_installed {
+fn get_latest_version(tool: &Tool) -> Option<String> {
+    let formula = format!("{}/{}", tool.tap, tool.formula);
+    let result = Command::new("brew")
+        .args(["info", "--json=v2", &formula])
+        .output();
+    match result {
+        Ok(output) if output.status.success() => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            // Parse JSON manually to find "stable" version
+            // Format: "version":{"stable":"x.y.z",...}
+            if let Some(pos) = stdout.find("\"stable\":\"") {
+                let start = pos + "\"stable\":\"".len();
+                if let Some(end) = stdout[start..].find('"') {
+                    return Some(stdout[start..start + end].to_string());
+                }
+            }
+            // Fallback: look for "versions":{"stable":"x.y.z"}
+            if let Some(pos) = stdout.find("\"version\":\"") {
+                let start = pos + "\"version\":\"".len();
+                if let Some(end) = stdout[start..].find('"') {
+                    return Some(stdout[start..start + end].to_string());
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
+fn upgrade_tool(tool: &Tool, lang: &str) {
+    let formula = format!("{}/{}", tool.tap, tool.formula);
+
+    // Get current version before upgrade
+    let current_version = get_tool_version(tool);
+
+    if current_version.is_none() {
         if lang == "ko" {
             println!(
-                "  {} {} 미설치 상태 — 건너뜁니다.",
+                "\n{} {} 미설치 상태 — 건너뜁니다.",
                 "[—]".bright_black(),
                 tool.name
             );
         } else {
             println!(
-                "  {} {} not installed — skipping.",
+                "\n{} {} not installed — skipping.",
                 "[—]".bright_black(),
                 tool.name
             );
@@ -475,40 +530,96 @@ fn upgrade_tool(tool: &Tool, lang: &str) {
         return;
     }
 
+    let cur_ver = current_version.unwrap();
+
+    if lang == "ko" {
+        println!(
+            "\n{} {} 업그레이드 확인 중... (현재: v{})",
+            ">>".cyan().bold(),
+            tool.name.cyan().bold(),
+            cur_ver
+        );
+    } else {
+        println!(
+            "\n{} Checking upgrade for {}... (current: v{})",
+            ">>".cyan().bold(),
+            tool.name.cyan().bold(),
+            cur_ver
+        );
+    }
+
+    // Check latest available version
+    let latest_version = get_latest_version(tool);
+    if let Some(ref latest) = latest_version {
+        if lang == "ko" {
+            println!("  최신 버전: v{}", latest.cyan());
+        } else {
+            println!("  Latest version: v{}", latest.cyan());
+        }
+    }
+
+    // If versions match, skip upgrade
+    if let Some(ref latest) = latest_version {
+        if latest == &cur_ver {
+            if lang == "ko" {
+                println!(
+                    "  {} {} 이미 최신 버전입니다. (v{})",
+                    "[OK]".green().bold(),
+                    tool.name.green().bold(),
+                    cur_ver
+                );
+            } else {
+                println!(
+                    "  {} {} already up to date. (v{})",
+                    "[OK]".green().bold(),
+                    tool.name.green().bold(),
+                    cur_ver
+                );
+            }
+            return;
+        }
+    }
+
     println!("  -> brew upgrade {}", formula);
     let result = Command::new("brew").args(["upgrade", &formula]).output();
 
     match result {
         Ok(output) if output.status.success() => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            let combined = format!("{}{}", stdout, stderr);
-            if combined.contains("already installed") || combined.contains("already the newest") {
+            let new_version = get_tool_version(tool);
+            let new_ver = new_version.as_deref().unwrap_or("?");
+
+            if new_ver == cur_ver {
                 if lang == "ko" {
                     println!(
-                        "  {} {} 이미 최신 버전입니다.",
+                        "  {} {} 이미 최신 버전입니다. (v{})",
                         "[OK]".green().bold(),
-                        tool.name.green().bold()
+                        tool.name.green().bold(),
+                        cur_ver
                     );
                 } else {
                     println!(
-                        "  {} {} already up to date.",
+                        "  {} {} already up to date. (v{})",
                         "[OK]".green().bold(),
-                        tool.name.green().bold()
+                        tool.name.green().bold(),
+                        cur_ver
                     );
                 }
             } else {
                 if lang == "ko" {
                     println!(
-                        "  {} {} 업그레이드 완료!",
+                        "  {} {} 업그레이드 완료! (v{} → v{})",
                         "[OK]".green().bold(),
-                        tool.name.green().bold()
+                        tool.name.green().bold(),
+                        cur_ver,
+                        new_ver
                     );
                 } else {
                     println!(
-                        "  {} {} upgraded!",
+                        "  {} {} upgraded! (v{} → v{})",
                         "[OK]".green().bold(),
-                        tool.name.green().bold()
+                        tool.name.green().bold(),
+                        cur_ver,
+                        new_ver
                     );
                 }
             }

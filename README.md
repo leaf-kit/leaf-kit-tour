@@ -44,33 +44,33 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
 [OK] 최신 버전입니다. (v0.1.0)
 ```
 
-### 도구 목록 및 설치 현황
+### 도구 목록 및 설치 현황 (버전 표시)
 
 ```
 ──────────────────────────────────────────────────────────────
-  #  상태         도구명        설명
+  #        상태  도구명        설명
 ──────────────────────────────────────────────────────────────
-  1  [installed]  stylemd       올인원 마크다운 툴킷 — lint, format, fix, analyze를 하나의 빠른 CLI로
+  1     [v1.2.0]  stylemd       올인원 마크다운 툴킷 — lint, format, fix, analyze를 하나의 빠른 CLI로
                                 $ stylemd lint README.md        # 마크다운 스타일 검사
                                 $ stylemd format --fix docs/    # 자동 포맷팅 및 수정
                                 https://github.com/leaf-kit/style.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  2  [  —  ]      playgraph     세계 최초의 애니메이션 마크다운 뷰어 — 텍스트, 그래프, 다이어그램을 플레이
+  2      [  —  ]  playgraph     세계 최초의 애니메이션 마크다운 뷰어 — 텍스트, 그래프, 다이어그램을 플레이
                                 $ playgraph play chart.md       # 그래프 애니메이션 재생
                                 $ playgraph preview diagram.md  # 다이어그램 미리보기
                                 https://github.com/leaf-kit/playgraph.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  3  [installed]  lsmd          마크다운 인식 디렉토리 목록 도구 — ls 명령의 마크다운 특화 버전
+  3     [v0.9.1]  lsmd          마크다운 인식 디렉토리 목록 도구 — ls 명령의 마크다운 특화 버전
                                 $ lsmd                          # 현재 디렉토리 마크다운 목록
                                 $ lsmd --tree docs/             # 트리 형태로 문서 탐색
                                 https://github.com/leaf-kit/ls.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  4  [  —  ]      gmd           Grep Markdown — 마크다운 구조 인식 고속 검색 및 분석 도구
+  4      [  —  ]  gmd           Grep Markdown — 마크다운 구조 인식 고속 검색 및 분석 도구
                                 $ gmd search "API" docs/        # 마크다운 내 구조적 검색
                                 $ gmd headings README.md        # 헤딩 구조 추출
                                 https://github.com/leaf-kit/g.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  5  [  —  ]      bark          터미널 마크다운 뷰어 — Browse And Render Markdown, Keenly
+  5      [  —  ]  bark          터미널 마크다운 뷰어 — Browse And Render Markdown, Keenly
                                 $ bark README.md                # 터미널에서 마크다운 렌더링
                                 $ bark --theme dark guide.md    # 다크 테마로 문서 보기
                                 https://github.com/leaf-kit/bark.md
@@ -147,23 +147,23 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
   [OK] playgraph 재설치 완료!
 ```
 
-### 전체 업그레이드
+### 전체 업그레이드 (버전 비교 표시)
 
 ```
 선택> u
 
 >> 설치된 도구를 전체 업그레이드합니다.
 
->> stylemd 업그레이드 확인 중...
+>> stylemd 업그레이드 확인 중... (현재: v1.1.0)
+  최신 버전: v1.2.0
   -> brew upgrade leaf-kit/stylemd/stylemd
-  [OK] stylemd 업그레이드 완료!
+  [OK] stylemd 업그레이드 완료! (v1.1.0 → v1.2.0)
 
->> playgraph 업그레이드 확인 중...
-  [—] playgraph 미설치 상태 — 건너뜁니다.
+[—] playgraph 미설치 상태 — 건너뜁니다.
 
->> lsmd 업그레이드 확인 중...
-  -> brew upgrade leaf-kit/lsmd/lsmd
-  [OK] lsmd 이미 최신 버전입니다.
+>> lsmd 업그레이드 확인 중... (현재: v0.9.1)
+  최신 버전: v0.9.1
+  [OK] lsmd 이미 최신 버전입니다. (v0.9.1)
 
 ...
 

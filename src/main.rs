@@ -204,9 +204,20 @@ fn check_self_update(lang: &str) {
 struct ToolStatus {
     installed: bool,
     version: Option<String>,
+    latest: Option<String>,
+}
+
+impl ToolStatus {
+    fn needs_upgrade(&self) -> bool {
+        match (&self.version, &self.latest) {
+            (Some(cur), Some(lat)) => cur != lat,
+            _ => false,
+        }
+    }
 }
 
 fn get_install_status() -> Vec<ToolStatus> {
+    // Get installed versions
     let result = Command::new("brew")
         .args(["list", "--formula", "--versions"])
         .output();
@@ -222,7 +233,6 @@ fn get_install_status() -> Vec<ToolStatus> {
     TOOLS
         .iter()
         .map(|tool| {
-            // Each line is like "formula 1.2.3" or "formula 1.2.3 1.3.0"
             let found = lines.iter().find(|line| {
                 let parts: Vec<&str> = line.split_whitespace().collect();
                 parts.first().map_or(false, |name| *name == tool.formula)
@@ -231,14 +241,17 @@ fn get_install_status() -> Vec<ToolStatus> {
                 Some(line) => {
                     let parts: Vec<&str> = line.split_whitespace().collect();
                     let version = parts.last().map(|v| v.to_string());
+                    let latest = get_latest_version(tool);
                     ToolStatus {
                         installed: true,
                         version,
+                        latest,
                     }
                 }
                 None => ToolStatus {
                     installed: false,
                     version: None,
+                    latest: None,
                 },
             }
         })
@@ -265,13 +278,35 @@ fn print_tool_list(lang: &str) {
     );
 
     for (i, tool) in TOOLS.iter().enumerate() {
-        let status_icon = if statuses[i].installed {
-            match &statuses[i].version {
-                Some(v) => format!("[v{}]", v).green().bold().to_string(),
-                None => "[installed]".green().bold().to_string(),
+        let status = &statuses[i];
+        let (status_icon, version_info) = if status.installed {
+            if status.needs_upgrade() {
+                let cur = status.version.as_deref().unwrap_or("?");
+                let lat = status.latest.as_deref().unwrap_or("?");
+                let icon = if lang == "ko" {
+                    "[업그레이드 필요]".yellow().bold().to_string()
+                } else {
+                    "[upgrade]".yellow().bold().to_string()
+                };
+                let info = format!("v{} → v{}", cur, lat).yellow().to_string();
+                (icon, info)
+            } else {
+                let ver = status.version.as_deref().unwrap_or("?");
+                let icon = if lang == "ko" {
+                    "[최신]".green().bold().to_string()
+                } else {
+                    "[latest]".green().bold().to_string()
+                };
+                let info = format!("v{}", ver).green().to_string();
+                (icon, info)
             }
         } else {
-            "[  —  ]".bright_black().to_string()
+            let icon = if lang == "ko" {
+                "[미설치]".bright_black().to_string()
+            } else {
+                "[not installed]".bright_black().to_string()
+            };
+            (icon, String::new())
         };
 
         let desc = if lang == "ko" {
@@ -280,13 +315,24 @@ fn print_tool_list(lang: &str) {
             tool.description
         };
 
-        println!(
-            "  {}  {:>12}  {:<12}  {}",
-            format!("{}", i + 1).cyan().bold(),
-            status_icon,
-            tool.name.green().bold(),
-            desc
-        );
+        if version_info.is_empty() {
+            println!(
+                "  {}  {}  {:<12}  {}",
+                format!("{}", i + 1).cyan().bold(),
+                status_icon,
+                tool.name.green().bold(),
+                desc
+            );
+        } else {
+            println!(
+                "  {}  {} {}  {:<12}  {}",
+                format!("{}", i + 1).cyan().bold(),
+                status_icon,
+                version_info,
+                tool.name.green().bold(),
+                desc
+            );
+        }
 
         let example = if lang == "ko" {
             tool.example_ko

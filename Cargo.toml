@@ -1,9 +1,13 @@
 [package]
-name = "repo-tour"
+name = "leaf-kit-tour"
 version = "0.1.0"
 edition = "2021"
 description = "Browse and install leaf-kit CLI tools via Homebrew"
 license = "MIT"
+
+[[bin]]
+name = "leaf-kit-tour"
+path = "src/main.rs"
 
 [dependencies]
 colored = "2"

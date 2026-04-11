@@ -166,6 +166,13 @@ fn parse_stable_version(json: &str) -> Option<String> {
 }
 
 fn get_self_latest_version() -> Option<String> {
+    // tap 원격 정보를 먼저 갱신하여 최신 formula를 가져옴
+    let _ = Command::new("brew")
+        .args(["update", "--quiet"])
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status();
+
     let result = Command::new("brew")
         .args(["info", "--json=v2", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
         .output();

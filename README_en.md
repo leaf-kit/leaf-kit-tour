@@ -1,5 +1,9 @@
 # leaf-kit-tour
 
+<p align="center">
+  <img src="images/logo.png" alt="leaf-kit-tour" width="600" />
+</p>
+
 > [한국어](README.md)
 
 > An interactive installer to easily set up leaf-kit Markdown CLI tools via Homebrew.

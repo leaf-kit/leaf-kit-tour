@@ -1,5 +1,9 @@
 # leaf-kit-tour
 
+<p align="center">
+  <img src="images/logo.png" alt="leaf-kit-tour" width="600" />
+</p>
+
 > [English](README_en.md)
 
 > leaf-kit 마크다운 툴킷 CLI를 Homebrew로 간편하게 설치할 수 있는 대화형 인스톨러입니다.

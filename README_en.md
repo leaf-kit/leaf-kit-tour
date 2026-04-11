@@ -32,6 +32,7 @@ leaf-kit-tour --lang ko
 
 - **Auto-update** — automatically checks for and applies updates on launch
 - **Install status** — shows real-time install state of each tool via `brew list`
+- **Tool details** — per-tool OS support, source availability, and binary platform info
 - **Install / Reinstall / Upgrade / Uninstall** — all from an interactive menu
 - **Multilingual** — Korean and English with interactive language selection at startup
 
@@ -114,6 +115,7 @@ Install leaf-kit Markdown CLI tools easily via Homebrew.
   r  Reinstall mode
   u  Upgrade all installed tools
   d  Uninstall mode (by number or all)
+  i  Tool details (OS, source, binary)
   p  Show supported platforms
   s  Refresh install status
   q  Quit
@@ -121,15 +123,46 @@ Install leaf-kit Markdown CLI tools easily via Homebrew.
 select>
 ```
 
+### Tool Details (i)
+
+```
+select> i
+
+[Tool Details]
+──────────────────────────────────────────────────────────────
+  1. stylemd
+     Version: v1.2.0
+     Supported OS: macOS, Linux, Windows (WSL2)
+     Source: available (https://github.com/leaf-kit/style.md)
+     Binary: macOS arm64, macOS x86_64, Linux x86_64, Linux aarch64
+     Install: SRC/BIN
+──────────────────────────────────────────────────────────────
+  2. playgraph
+     Version: not installed
+     Supported OS: macOS
+     Source: available (https://github.com/leaf-kit/playgraph.md)
+     Binary: macOS arm64, macOS x86_64
+     Install: SRC/BIN
+──────────────────────────────────────────────────────────────
+  ...
+──────────────────────────────────────────────────────────────
+  i Source build available on all platforms (Rust 1.70+)
+```
+
+> **Detail fields**
+> - `Supported OS` — operating systems the tool runs on
+> - `Source` — whether source build is available, with repository link
+> - `Binary` — platforms with pre-built binary (Bottle) support
+
 ## Available CLI Tools
 
-| # | Tool | Description | Install Type | Install Command |
-|---|------|-------------|-------------|-----------------|
-| 1 | **stylemd** | All-in-one Markdown toolkit (lint, format, fix, analyze) | 🟢 Source &nbsp; 🔵 Binary | `brew install leaf-kit/stylemd/stylemd` |
-| 2 | **playgraph** | Animated Markdown viewer (graphs & diagrams) | 🟢 Source &nbsp; 🔵 Binary | `brew install leaf-kit/playgraph/playgraph` |
-| 3 | **lsmd** | Markdown-aware directory listing tool | 🟢 Source &nbsp; 🔵 Binary | `brew install leaf-kit/lsmd/lsmd` |
-| 4 | **gmd** | Grep Markdown — structure-aware fast search | 🟢 Source &nbsp; 🔵 Binary | `brew install leaf-kit/gmd/gmd` |
-| 5 | **bark** | Terminal Markdown viewer (Browse And Render marKdown) | 🟢 Source &nbsp; 🔵 Binary | `brew install leaf-kit/bark/bark` |
+| # | Tool | Description | Supported OS | Install Type | Binary Platforms |
+|---|------|-------------|-------------|-------------|-----------------|
+| 1 | **stylemd** | All-in-one Markdown toolkit (lint, format, fix, analyze) | macOS, Linux, WSL2 | 🟢 Source &nbsp; 🔵 Binary | macOS arm64/x86_64, Linux x86_64/aarch64 |
+| 2 | **playgraph** | Animated Markdown viewer (graphs & diagrams) | macOS | 🟢 Source &nbsp; 🔵 Binary | macOS arm64/x86_64 |
+| 3 | **lsmd** | Markdown-aware directory listing tool | macOS, Linux, WSL2 | 🟢 Source &nbsp; 🔵 Binary | macOS arm64/x86_64, Linux x86_64/aarch64 |
+| 4 | **gmd** | Grep Markdown — structure-aware fast search | macOS, Linux, WSL2 | 🟢 Source &nbsp; 🔵 Binary | macOS arm64/x86_64, Linux x86_64/aarch64 |
+| 5 | **bark** | Terminal Markdown viewer (Browse And Render marKdown) | macOS, Linux, WSL2 | 🟢 Source &nbsp; 🔵 Binary | macOS arm64/x86_64, Linux x86_64/aarch64 |
 
 > **Install type legend**
 > - 🟢 **Source (Formula)** — builds from source via `brew install` (requires Rust toolchain)

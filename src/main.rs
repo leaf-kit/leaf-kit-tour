@@ -15,6 +15,8 @@ struct Tool {
     repo: &'static str,
     has_source: bool,
     has_binary: bool,
+    supported_os: &'static [&'static str],
+    binary_platforms: &'static [&'static str],
 }
 
 const TOOLS: &[Tool] = &[
@@ -29,6 +31,8 @@ const TOOLS: &[Tool] = &[
         repo: "https://github.com/leaf-kit/style.md",
         has_source: true,
         has_binary: true,
+        supported_os: &["macOS", "Linux", "Windows (WSL2)"],
+        binary_platforms: &["macOS arm64", "macOS x86_64", "Linux x86_64", "Linux aarch64"],
     },
     Tool {
         name: "playgraph",
@@ -41,6 +45,8 @@ const TOOLS: &[Tool] = &[
         repo: "https://github.com/leaf-kit/playgraph.md",
         has_source: true,
         has_binary: true,
+        supported_os: &["macOS"],
+        binary_platforms: &["macOS arm64", "macOS x86_64"],
     },
     Tool {
         name: "lsmd",
@@ -53,6 +59,8 @@ const TOOLS: &[Tool] = &[
         repo: "https://github.com/leaf-kit/ls.md",
         has_source: true,
         has_binary: true,
+        supported_os: &["macOS", "Linux", "Windows (WSL2)"],
+        binary_platforms: &["macOS arm64", "macOS x86_64", "Linux x86_64", "Linux aarch64"],
     },
     Tool {
         name: "gmd",
@@ -65,6 +73,8 @@ const TOOLS: &[Tool] = &[
         repo: "https://github.com/leaf-kit/g.md",
         has_source: true,
         has_binary: true,
+        supported_os: &["macOS", "Linux", "Windows (WSL2)"],
+        binary_platforms: &["macOS arm64", "macOS x86_64", "Linux x86_64", "Linux aarch64"],
     },
     Tool {
         name: "bark",
@@ -77,6 +87,8 @@ const TOOLS: &[Tool] = &[
         repo: "https://github.com/leaf-kit/bark.md",
         has_source: true,
         has_binary: true,
+        supported_os: &["macOS", "Linux", "Windows (WSL2)"],
+        binary_platforms: &["macOS arm64", "macOS x86_64", "Linux x86_64", "Linux aarch64"],
     },
 ];
 
@@ -363,6 +375,186 @@ fn install_type_badge(tool: &Tool, lang: &str) -> String {
     parts.join(&format!("{}", "/".bright_black()))
 }
 
+fn print_tool_details(lang: &str) {
+    let statuses = get_install_status();
+
+    println!();
+    if lang == "ko" {
+        println!("{}", "[도구 상세 정보]".yellow().bold());
+    } else {
+        println!("{}", "[Tool Details]".yellow().bold());
+    }
+
+    for (i, tool) in TOOLS.iter().enumerate() {
+        let status = &statuses[i];
+        println!(
+            "{}",
+            "──────────────────────────────────────────────────────────────"
+                .bright_black()
+        );
+        println!(
+            "  {} {}",
+            format!("{}.", i + 1).cyan().bold(),
+            tool.name.green().bold()
+        );
+
+        // Version
+        if status.installed {
+            let ver = status.version.as_deref().unwrap_or("?");
+            if status.needs_upgrade() {
+                let lat = status.latest.as_deref().unwrap_or("?");
+                if lang == "ko" {
+                    println!(
+                        "     {} v{} (최신: v{})",
+                        "버전:".bold(),
+                        ver.yellow(),
+                        lat.cyan()
+                    );
+                } else {
+                    println!(
+                        "     {} v{} (latest: v{})",
+                        "Version:".bold(),
+                        ver.yellow(),
+                        lat.cyan()
+                    );
+                }
+            } else {
+                if lang == "ko" {
+                    println!("     {} v{}", "버전:".bold(), ver.green());
+                } else {
+                    println!("     {} v{}", "Version:".bold(), ver.green());
+                }
+            }
+        } else {
+            if lang == "ko" {
+                println!("     {} {}", "버전:".bold(), "미설치".bright_black());
+            } else {
+                println!("     {} {}", "Version:".bold(), "not installed".bright_black());
+            }
+        }
+
+        // Supported OS
+        if lang == "ko" {
+            println!(
+                "     {} {}",
+                "지원 OS:".bold(),
+                tool.supported_os.join(", ")
+            );
+        } else {
+            println!(
+                "     {} {}",
+                "Supported OS:".bold(),
+                tool.supported_os.join(", ")
+            );
+        }
+
+        // Source code
+        if lang == "ko" {
+            if tool.has_source {
+                println!(
+                    "     {} {} ({})",
+                    "소스코드:".bold(),
+                    "있음".green(),
+                    tool.repo.underline().bright_black()
+                );
+            } else {
+                println!(
+                    "     {} {}",
+                    "소스코드:".bold(),
+                    "없음 (바이너리 전용)".bright_black()
+                );
+            }
+        } else {
+            if tool.has_source {
+                println!(
+                    "     {} {} ({})",
+                    "Source:".bold(),
+                    "available".green(),
+                    tool.repo.underline().bright_black()
+                );
+            } else {
+                println!(
+                    "     {} {}",
+                    "Source:".bold(),
+                    "none (binary only)".bright_black()
+                );
+            }
+        }
+
+        // Binary platforms
+        if lang == "ko" {
+            if tool.has_binary {
+                println!(
+                    "     {} {}",
+                    "바이너리:".bold(),
+                    tool.binary_platforms
+                        .iter()
+                        .map(|p| format!("{}", p.cyan()))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            } else {
+                println!(
+                    "     {} {}",
+                    "바이너리:".bold(),
+                    "없음 (소스 빌드 전용)".bright_black()
+                );
+            }
+        } else {
+            if tool.has_binary {
+                println!(
+                    "     {} {}",
+                    "Binary:".bold(),
+                    tool.binary_platforms
+                        .iter()
+                        .map(|p| format!("{}", p.cyan()))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            } else {
+                println!(
+                    "     {} {}",
+                    "Binary:".bold(),
+                    "none (source build only)".bright_black()
+                );
+            }
+        }
+
+        // Install type badge
+        if lang == "ko" {
+            println!(
+                "     {} {}",
+                "설치 방식:".bold(),
+                install_type_badge(tool, lang)
+            );
+        } else {
+            println!(
+                "     {} {}",
+                "Install:".bold(),
+                install_type_badge(tool, lang)
+            );
+        }
+    }
+
+    println!(
+        "{}",
+        "──────────────────────────────────────────────────────────────"
+            .bright_black()
+    );
+    if lang == "ko" {
+        println!(
+            "  {} 소스 빌드는 모든 플랫폼에서 가능 (Rust 1.70+)",
+            "i".cyan().bold()
+        );
+    } else {
+        println!(
+            "  {} Source build available on all platforms (Rust 1.70+)",
+            "i".cyan().bold()
+        );
+    }
+    println!();
+}
+
 fn print_platform_support(lang: &str) {
     println!();
     if lang == "ko" {
@@ -588,6 +780,7 @@ fn print_menu(lang: &str) {
         println!("  {}  재설치 모드", "r".cyan().bold());
         println!("  {}  전체 업그레이드 (설치된 도구 최신화)", "u".cyan().bold());
         println!("  {}  삭제 모드 (번호 지정 또는 전체 삭제)", "d".cyan().bold());
+        println!("  {}  도구 상세 정보 (OS, 소스, 바이너리)", "i".cyan().bold());
         println!("  {}  지원 플랫폼 보기", "p".cyan().bold());
         println!("  {}  설치 현황 새로고침", "s".cyan().bold());
         println!("  {}  종료", "q".cyan().bold());
@@ -601,6 +794,7 @@ fn print_menu(lang: &str) {
         println!("  {}  Reinstall mode", "r".cyan().bold());
         println!("  {}  Upgrade all installed tools", "u".cyan().bold());
         println!("  {}  Uninstall mode (by number or all)", "d".cyan().bold());
+        println!("  {}  Tool details (OS, source, binary)", "i".cyan().bold());
         println!("  {}  Show supported platforms", "p".cyan().bold());
         println!("  {}  Refresh install status", "s".cyan().bold());
         println!("  {}  Quit", "q".cyan().bold());
@@ -1240,6 +1434,9 @@ fn main() {
                     println!("\n{}\n", "All upgrades complete!".green().bold());
                 }
             }
+            "i" | "I" | "info" | "detail" | "details" => {
+                print_tool_details(lang);
+            }
             "p" | "P" | "platform" => {
                 print_platform_support(lang);
             }
@@ -1256,12 +1453,12 @@ fn main() {
                 if indices.is_empty() {
                     if lang == "ko" {
                         println!(
-                            "\n{} 올바른 옵션을 선택하세요. (번호, a=전체설치, r=재설치, u=업그레이드, d=삭제, p=플랫폼, s=현황, q=종료)\n",
+                            "\n{} 올바른 옵션을 선택하세요. (번호, a=전체설치, r=재설치, u=업그레이드, d=삭제, i=상세정보, p=플랫폼, s=현황, q=종료)\n",
                             "[!]".yellow()
                         );
                     } else {
                         println!(
-                            "\n{} Invalid option. (number, a=all, r=reinstall, u=upgrade, d=uninstall, p=platforms, s=status, q=quit)\n",
+                            "\n{} Invalid option. (number, a=all, r=reinstall, u=upgrade, d=uninstall, i=details, p=platforms, s=status, q=quit)\n",
                             "[!]".yellow()
                         );
                     }

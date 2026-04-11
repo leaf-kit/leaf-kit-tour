@@ -174,7 +174,26 @@ fn get_self_latest_version() -> Option<String> {
             let stdout = String::from_utf8_lossy(&output.stdout);
             parse_stable_version(&stdout)
         }
-        _ => None,
+        _ => {
+            // tap이 없을 수 있으므로 추가 후 재시도
+            let tap = Command::new("brew")
+                .args(["tap", "leaf-kit/leaf-kit-tour"])
+                .output();
+            if let Ok(tap_out) = tap {
+                if tap_out.status.success() {
+                    let retry = Command::new("brew")
+                        .args(["info", "--json=v2", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
+                        .output();
+                    if let Ok(output) = retry {
+                        if output.status.success() {
+                            let stdout = String::from_utf8_lossy(&output.stdout);
+                            return parse_stable_version(&stdout);
+                        }
+                    }
+                }
+            }
+            None
+        }
     }
 }
 

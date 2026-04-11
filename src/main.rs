@@ -149,6 +149,22 @@ fn print_banner(lang: &str) {
     println!();
 }
 
+fn parse_stable_version(json: &str) -> Option<String> {
+    // Try patterns with and without spaces: "stable":"x.y.z" or "stable": "x.y.z"
+    for pattern in &["\"stable\": \"", "\"stable\":\""] {
+        if let Some(pos) = json.find(pattern) {
+            let start = pos + pattern.len();
+            if let Some(end) = json[start..].find('"') {
+                let ver = &json[start..start + end];
+                if !ver.is_empty() && ver.chars().next().map_or(false, |c| c.is_ascii_digit()) {
+                    return Some(ver.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
 fn get_self_latest_version() -> Option<String> {
     let result = Command::new("brew")
         .args(["info", "--json=v2", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
@@ -156,13 +172,7 @@ fn get_self_latest_version() -> Option<String> {
     match result {
         Ok(output) if output.status.success() => {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            if let Some(pos) = stdout.find("\"stable\":\"") {
-                let start = pos + "\"stable\":\"".len();
-                if let Some(end) = stdout[start..].find('"') {
-                    return Some(stdout[start..start + end].to_string());
-                }
-            }
-            None
+            parse_stable_version(&stdout)
         }
         _ => None,
     }
@@ -933,22 +943,7 @@ fn get_latest_version(tool: &Tool) -> Option<String> {
     match result {
         Ok(output) if output.status.success() => {
             let stdout = String::from_utf8_lossy(&output.stdout);
-            // Parse JSON manually to find "stable" version
-            // Format: "version":{"stable":"x.y.z",...}
-            if let Some(pos) = stdout.find("\"stable\":\"") {
-                let start = pos + "\"stable\":\"".len();
-                if let Some(end) = stdout[start..].find('"') {
-                    return Some(stdout[start..start + end].to_string());
-                }
-            }
-            // Fallback: look for "versions":{"stable":"x.y.z"}
-            if let Some(pos) = stdout.find("\"version\":\"") {
-                let start = pos + "\"version\":\"".len();
-                if let Some(end) = stdout[start..].find('"') {
-                    return Some(stdout[start..start + end].to_string());
-                }
-            }
-            None
+            parse_stable_version(&stdout)
         }
         _ => None,
     }

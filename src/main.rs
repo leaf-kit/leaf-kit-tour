@@ -32,8 +32,8 @@ const TOOLS: &[Tool] = &[
         formula: "playgraph",
         description: "Animated Markdown viewer — play text, graphs, and diagrams",
         description_ko: "세계 최초의 애니메이션 마크다운 뷰어 — 텍스트, 그래프, 다이어그램을 플레이",
-        example: "playgraph play chart.md\nplaygraph preview diagram.md",
-        example_ko: "playgraph play chart.md       # 그래프 애니메이션 재생\nplaygraph preview diagram.md  # 다이어그램 미리보기",
+        example: "",
+        example_ko: "",
         repo: "https://github.com/leaf-kit/playgraph.md",
     },
     Tool {

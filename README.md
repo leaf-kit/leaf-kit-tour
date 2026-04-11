@@ -72,8 +72,7 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
                                           $ stylemd format --fix docs/    # 자동 포맷팅 및 수정
                                           https://github.com/leaf-kit/style.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  2  [미설치]               playgraph     세계 최초의 애니메이션 마크다운 뷰어
-                                          $ playgraph play chart.md       # 그래프 애니메이션 재생
+  2  [미설치]               playgraph     세계 최초의 애니메이션 마크다운 뷰어 (UI 앱)
                                           https://github.com/leaf-kit/playgraph.md
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   3  [업그레이드 필요] v0.8.0 → v0.9.1   lsmd          마크다운 인식 디렉토리 목록 도구
@@ -241,9 +240,8 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
 stylemd lint README.md
 stylemd format --fix docs/
 
-# playgraph — 그래프·다이어그램 애니메이션
-playgraph play chart.md
-playgraph preview diagram.md
+# playgraph — 애니메이션 마크다운 뷰어 (UI 애플리케이션)
+# 터미널 CLI가 아닌 UI 앱으로 실행됩니다
 
 # lsmd — 마크다운 디렉토리 목록
 lsmd

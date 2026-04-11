@@ -137,6 +137,25 @@ fn print_banner(lang: &str) {
     println!();
 }
 
+fn get_self_latest_version() -> Option<String> {
+    let result = Command::new("brew")
+        .args(["info", "--json=v2", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
+        .output();
+    match result {
+        Ok(output) if output.status.success() => {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            if let Some(pos) = stdout.find("\"stable\":\"") {
+                let start = pos + "\"stable\":\"".len();
+                if let Some(end) = stdout[start..].find('"') {
+                    return Some(stdout[start..start + end].to_string());
+                }
+            }
+            None
+        }
+        _ => None,
+    }
+}
+
 fn check_self_update(lang: &str) {
     if lang == "ko" {
         println!(
@@ -150,71 +169,109 @@ fn check_self_update(lang: &str) {
         );
     }
 
-    let result = Command::new("brew")
-        .args(["outdated", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
-        .output();
+    let latest = get_self_latest_version();
 
-    match result {
-        Ok(output) => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            if stdout.trim().contains("leaf-kit-tour") {
-                if lang == "ko" {
-                    println!(
-                        "{} 새 버전이 있습니다. 업데이트 중...",
-                        "[*]".yellow().bold()
-                    );
-                } else {
-                    println!(
-                        "{} New version available. Updating...",
-                        "[*]".yellow().bold()
-                    );
-                }
-                let update = Command::new("brew")
-                    .args(["upgrade", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
-                    .status();
-                match update {
-                    Ok(status) if status.success() => {
-                        if lang == "ko" {
-                            println!(
-                                "{} 업데이트 완료! 최신 버전으로 다시 실행합니다.\n",
-                                "[OK]".green().bold()
-                            );
-                        } else {
-                            println!(
-                                "{} Updated! Restarting with the latest version.\n",
-                                "[OK]".green().bold()
-                            );
-                        }
-                        // Re-exec with same args
-                        let args: Vec<String> = std::env::args().collect();
-                        let _ = Command::new(&args[0])
-                            .args(&args[1..])
-                            .status();
-                        std::process::exit(0);
-                    }
-                    _ => {
-                        if lang == "ko" {
-                            println!(
-                                "{} 업데이트 실패. 현재 버전으로 계속합니다.\n",
-                                "[!]".yellow().bold()
-                            );
-                        } else {
-                            println!(
-                                "{} Update failed. Continuing with current version.\n",
-                                "[!]".yellow().bold()
-                            );
-                        }
-                    }
-                }
-            } else {
+    match latest {
+        Some(latest_ver) => {
+            if latest_ver == VERSION {
                 if lang == "ko" {
                     println!("{} 최신 버전입니다. (v{})\n", "[OK]".green().bold(), VERSION);
                 } else {
                     println!("{} Already up to date. (v{})\n", "[OK]".green().bold(), VERSION);
                 }
+                return;
+            }
+
+            if lang == "ko" {
+                println!(
+                    "{} 새 버전이 있습니다: v{} (현재: v{})",
+                    "[*]".yellow().bold(),
+                    latest_ver.cyan(),
+                    VERSION
+                );
+            } else {
+                println!(
+                    "{} New version available: v{} (current: v{})",
+                    "[*]".yellow().bold(),
+                    latest_ver.cyan(),
+                    VERSION
+                );
+            }
+
+            let answer = {
+                let msg = if lang == "ko" {
+                    format!(
+                        "{} v{}(으)로 업데이트하시겠습니까? (Y/n) ",
+                        ">>".cyan().bold(),
+                        latest_ver
+                    )
+                } else {
+                    format!(
+                        "{} Update to v{}? (Y/n) ",
+                        ">>".cyan().bold(),
+                        latest_ver
+                    )
+                };
+                prompt_input(&msg)
+            };
+
+            if answer == "n" || answer == "N" || answer == "no" {
+                if lang == "ko" {
+                    println!("{} 현재 버전(v{})으로 계속합니다.\n", "[*]".cyan().bold(), VERSION);
+                } else {
+                    println!("{} Continuing with current version (v{}).\n", "[*]".cyan().bold(), VERSION);
+                }
+                return;
+            }
+
+            if lang == "ko" {
+                println!("{} 업데이트 중...", "[*]".yellow().bold());
+            } else {
+                println!("{} Updating...", "[*]".yellow().bold());
+            }
+
+            let update = Command::new("brew")
+                .args(["upgrade", "leaf-kit/leaf-kit-tour/leaf-kit-tour"])
+                .status();
+            match update {
+                Ok(status) if status.success() => {
+                    if lang == "ko" {
+                        println!(
+                            "{} 업데이트 완료! (v{} → v{}) 최신 버전으로 다시 실행합니다.\n",
+                            "[OK]".green().bold(),
+                            VERSION,
+                            latest_ver
+                        );
+                    } else {
+                        println!(
+                            "{} Updated! (v{} → v{}) Restarting with the latest version.\n",
+                            "[OK]".green().bold(),
+                            VERSION,
+                            latest_ver
+                        );
+                    }
+                    let args: Vec<String> = std::env::args().collect();
+                    let _ = Command::new(&args[0])
+                        .args(&args[1..])
+                        .status();
+                    std::process::exit(0);
+                }
+                _ => {
+                    if lang == "ko" {
+                        println!(
+                            "{} 업데이트 실패. 현재 버전으로 계속합니다.\n",
+                            "[!]".yellow().bold()
+                        );
+                    } else {
+                        println!(
+                            "{} Update failed. Continuing with current version.\n",
+                            "[!]".yellow().bold()
+                        );
+                    }
+                }
             }
         }
-        Err(_) => {
+        None => {
             if lang == "ko" {
                 println!(
                     "{} 업데이트 확인을 건너뜁니다. (brew를 통한 설치가 아닐 수 있음)\n",

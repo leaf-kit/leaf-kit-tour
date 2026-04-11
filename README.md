@@ -1,5 +1,7 @@
 # leaf-kit-tour
 
+> [English](README_en.md)
+
 > leaf-kit 마크다운 툴킷 CLI를 Homebrew로 간편하게 설치할 수 있는 대화형 인스톨러입니다.
 
 ## 설치
@@ -64,35 +66,40 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
 ### 도구 목록 및 설치 현황
 
 ```
-──────────────────────────────────────────────────────────────
-  #  상태   도구명        설명
-──────────────────────────────────────────────────────────────
-  1  [최신] v1.2.0          stylemd       올인원 마크다운 툴킷 — lint, format, fix, analyze를 하나의 빠른 CLI로
-                                          $ stylemd lint README.md        # 마크다운 스타일 검사
-                                          $ stylemd format --fix docs/    # 자동 포맷팅 및 수정
-                                          https://github.com/leaf-kit/style.md
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  2  [미설치]               playgraph     세계 최초의 애니메이션 마크다운 뷰어 (UI 앱)
-                                          https://github.com/leaf-kit/playgraph.md
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  3  [업그레이드 필요] v0.8.0 → v0.9.1   lsmd          마크다운 인식 디렉토리 목록 도구
-                                          $ lsmd --tree docs/             # 트리 형태로 문서 탐색
-                                          https://github.com/leaf-kit/ls.md
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  4  [미설치]               gmd           Grep Markdown — 마크다운 구조 인식 고속 검색
-                                          $ gmd search "API" docs/        # 마크다운 내 구조적 검색
-                                          https://github.com/leaf-kit/g.md
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  5  [최신] v1.0.0          bark          터미널 마크다운 뷰어
-                                          $ bark README.md                # 터미널에서 마크다운 렌더링
-                                          https://github.com/leaf-kit/bark.md
-──────────────────────────────────────────────────────────────
+══════════════════════════════════════════════════════════════════════════
+  #  상태   도구명        설명                                  설치 방식
+══════════════════════════════════════════════════════════════════════════
+  1  [최신] v1.2.0  stylemd       올인원 마크다운 툴킷 — lint, format   소스/바이너리
+                                  $ stylemd lint README.md
+                                  $ stylemd format --fix docs/
+                                  https://github.com/leaf-kit/style.md
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  2  [미설치]       playgraph     애니메이션 마크다운 뷰어 (UI 앱)      소스/바이너리
+                                  https://github.com/leaf-kit/playgraph.md
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  3  [업그레이드 필요] v0.8.0→v0.9.1  lsmd     마크다운 인식 디렉토리   소스/바이너리
+                                  $ lsmd --tree docs/
+                                  https://github.com/leaf-kit/ls.md
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  4  [미설치]       gmd           Grep Markdown — 구조 인식 고속 검색   소스/바이너리
+                                  $ gmd search "API" docs/
+                                  https://github.com/leaf-kit/g.md
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  5  [최신] v1.0.0  bark          터미널 마크다운 뷰어                   소스/바이너리
+                                  $ bark README.md
+                                  https://github.com/leaf-kit/bark.md
+══════════════════════════════════════════════════════════════════════════
+  i 소스 = 소스(Formula)빌드  바이너리 = 사전빌드 바이너리(Bottle)
 ```
 
 > **상태 표시 기준**
 > - `[최신] vX.Y.Z` — 설치됨, 최신 버전
 > - `[업그레이드 필요] vX.Y.Z → vA.B.C` — 설치됨, 새 버전 있음
 > - `[미설치]` — 아직 설치되지 않음
+>
+> **설치 방식**
+> - `소스` — Formula를 통해 소스에서 빌드 (초록색)
+> - `바이너리` — 사전 빌드된 Bottle로 즉시 설치 (청색)
 
 ### 메뉴 옵션
 
@@ -103,6 +110,7 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
   r  재설치 모드
   u  전체 업그레이드 (설치된 도구 최신화)
   d  삭제 모드 (번호 지정 또는 전체 삭제)
+  p  지원 플랫폼 보기
   s  설치 현황 새로고침
   q  종료
 
@@ -225,13 +233,31 @@ leaf-kit의 마크다운 툴킷 CLI 도구를 Homebrew로 간편하게 설치합
 
 ## 설치 가능한 CLI 도구 요약
 
-| # | 도구명 | 설명 | 설치 명령 |
-|---|--------|------|-----------|
-| 1 | **stylemd** | 올인원 마크다운 툴킷 (lint, format, fix, analyze) | `brew install leaf-kit/stylemd/stylemd` |
-| 2 | **playgraph** | 애니메이션 마크다운 뷰어 (그래프·다이어그램 플레이) | `brew install leaf-kit/playgraph/playgraph` |
-| 3 | **lsmd** | 마크다운 인식 디렉토리 목록 도구 | `brew install leaf-kit/lsmd/lsmd` |
-| 4 | **gmd** | Grep Markdown — 마크다운 구조 인식 고속 검색 | `brew install leaf-kit/gmd/gmd` |
-| 5 | **bark** | 터미널 마크다운 뷰어 (Browse And Render Markdown) | `brew install leaf-kit/bark/bark` |
+| # | 도구명 | 설명 | 설치 방식 | 설치 명령 |
+|---|--------|------|-----------|-----------|
+| 1 | **stylemd** | 올인원 마크다운 툴킷 (lint, format, fix, analyze) | 🟢 소스 &nbsp; 🔵 바이너리 | `brew install leaf-kit/stylemd/stylemd` |
+| 2 | **playgraph** | 애니메이션 마크다운 뷰어 (그래프·다이어그램 플레이) | 🟢 소스 &nbsp; 🔵 바이너리 | `brew install leaf-kit/playgraph/playgraph` |
+| 3 | **lsmd** | 마크다운 인식 디렉토리 목록 도구 | 🟢 소스 &nbsp; 🔵 바이너리 | `brew install leaf-kit/lsmd/lsmd` |
+| 4 | **gmd** | Grep Markdown — 마크다운 구조 인식 고속 검색 | 🟢 소스 &nbsp; 🔵 바이너리 | `brew install leaf-kit/gmd/gmd` |
+| 5 | **bark** | 터미널 마크다운 뷰어 (Browse And Render Markdown) | 🟢 소스 &nbsp; 🔵 바이너리 | `brew install leaf-kit/bark/bark` |
+
+> **설치 방식 범례**
+> - 🟢 **소스(Formula)** — `brew install`로 소스에서 빌드 (Rust 툴체인 필요)
+> - 🔵 **바이너리(Cask/Bottle)** — 사전 빌드된 바이너리로 즉시 설치
+
+### 바이너리(Bottle) 지원 플랫폼
+
+| 플랫폼 | 아키텍처 | 지원 |
+|--------|---------|------|
+| macOS Sonoma 14+ | Apple Silicon (arm64) | ✅ |
+| macOS Sonoma 14+ | Intel (x86_64) | ✅ |
+| macOS Ventura 13 | Apple Silicon (arm64) | ✅ |
+| macOS Ventura 13 | Intel (x86_64) | ✅ |
+| Linux (glibc 2.17+) | x86_64 | ✅ |
+| Linux (glibc 2.17+) | aarch64 | ✅ |
+| Windows (WSL2) | x86_64 | ⚠️ WSL2 + Homebrew로 사용 가능 |
+
+> **참고**: Bottle이 없는 환경에서도 Formula를 통해 소스 빌드가 가능합니다. Rust 1.70+ 툴체인이 필요합니다.
 
 ### 각 도구 명령어 예시
 
@@ -276,8 +302,12 @@ bark --theme dark guide.md
 
 ## 플랫폼
 
-- **macOS**: 현재 기본 지원
-- **Linux / Windows**: 확장 예정
+| OS | 아키텍처 | Homebrew 설치 | 상태 |
+|----|---------|--------------|------|
+| macOS 13+ | Apple Silicon (arm64) | `brew install` | 🟢 기본 지원 |
+| macOS 13+ | Intel (x86_64) | `brew install` | 🟢 기본 지원 |
+| Linux | x86_64 / aarch64 | `brew install` (Linuxbrew) | 🟡 지원 |
+| Windows | x86_64 | WSL2 + `brew install` | 🟡 지원 |
 
 ## 라이선스
 

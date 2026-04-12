@@ -666,20 +666,22 @@ fn print_tool_list(lang: &str) {
     );
     if lang == "ko" {
         println!(
-            "  {}  {}   {:<12}  {:<36} {}",
+            "  {}  {}   {:<12}  {:<36} {:<16} {}",
             "#".bold(),
             "상태".bold(),
             "도구명".bold(),
             "설명".bold(),
+            "지원 OS".bold(),
             "설치 방식".bold()
         );
     } else {
         println!(
-            "  {}  {}   {:<12}  {:<36} {}",
+            "  {}  {}   {:<12}  {:<36} {:<16} {}",
             "#".bold(),
             "Status".bold(),
             "Tool".bold(),
             "Description".bold(),
+            "OS".bold(),
             "Install".bold()
         );
     }
@@ -728,24 +730,27 @@ fn print_tool_list(lang: &str) {
         };
 
         let badge = install_type_badge(tool, lang);
+        let os_info = tool.supported_os.join(", ");
 
         if version_info.is_empty() {
             println!(
-                "  {}  {}  {:<12}  {:<36} {}",
+                "  {}  {}  {:<12}  {:<36} {:<16} {}",
                 format!("{}", i + 1).cyan().bold(),
                 status_icon,
                 tool.name.green().bold(),
                 desc,
+                os_info,
                 badge
             );
         } else {
             println!(
-                "  {}  {} {}  {:<12}  {:<36} {}",
+                "  {}  {} {}  {:<12}  {:<36} {:<16} {}",
                 format!("{}", i + 1).cyan().bold(),
                 status_icon,
                 version_info,
                 tool.name.green().bold(),
                 desc,
+                os_info,
                 badge
             );
         }
